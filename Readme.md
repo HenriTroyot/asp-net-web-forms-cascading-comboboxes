@@ -9,22 +9,21 @@
 * [Default.aspx](./CS/WebSite/Default.aspx) (VB: [Default.aspx](./VB/WebSite/Default.aspx))
 * [Default.aspx.cs](./CS/WebSite/Default.aspx.cs) (VB: [Default.aspx.vb](./VB/WebSite/Default.aspx.vb))
 <!-- default file list end -->
-# ASP.NET Web Forms - Implement Cascading Combo Boxes with ASPxComboBox
+# ASP.NET Web Forms - ASPxComboBox in Cascading Combo Boxes
 <!-- run online -->
 **[[Run Online]](https://codecentral.devexpress.com/e2355/)**
 <!-- run online end -->
 
-This demo shows how to implement cascading combo boxes using [ASPxComboBox](https://docs.devexpress.com/AspNet/DevExpress.Web.ASPxComboBox) controls. In the demo, the Country combo box limits the selection in the City combo box.
+This demo shows how to use [ASPxComboBox](https://docs.devexpress.com/AspNet/DevExpress.Web.ASPxComboBox) to implement two cascading combo boxes. In the demo, a selection in the first combo box (Country) filters the item list of the second combo box (City).
 
 ![example demo](demo.gif)
 
-The general technique for implementing cascading combo boxes is as follows:
-1. Set up two combo boxes and assign data to them. 
-2. When the first combo box's value is changed, perform a callback on the second combo box and send the updated value in the callback parameter.
-3. Update the items of the second combo box on the server based on the first combo box's value.
+To implement cascading [ASPxComboBox](https://docs.devexpress.com/AspNet/DevExpress.Web.ASPxComboBox) editors, use the following technique:  
+Respond to a change of the first combo box's selected value (in the client [SelectedIndexChanged](https://docs.devexpress.com/AspNet/js-ASPxClientComboBox.SelectedIndexChanged) event) and initiate a round trip to the server for the second combo box to filter its items (use a combination of the client [PerformCallback](https://docs.devexpress.com/AspNet/js-ASPxClientCallback.PerformCallback(parameter)) method and the server [Callback](https://docs.devexpress.com/AspNet/DevExpress.Web.ASPxCallback.Callback) event).
 
-## 1. Setup Combo Boxes
-Create two [ASPxComboBox](https://docs.devexpress.com/AspNet/DevExpress.Web.ASPxComboBox) controls and bind data sources to them. This example uses [SqlDataSource](https://docs.microsoft.com/en-us/dotnet/api/system.web.ui.webcontrols.sqldatasource?view=netframework-4.8) to populate the combo boxes. The data source bound to the second combo box uses the [SelectParameters](https://docs.microsoft.com/en-us/dotnet/api/system.web.ui.webcontrols.sqldatasource.selectparameters?view=netframework-4.8) property to dynamically filter its items.
+
+## 1. Setup combo boxes and their data sources
+Create two [ASPxComboBox](https://docs.devexpress.com/AspNet/DevExpress.Web.ASPxComboBox) editors and define their data sources. In the second combo box's data source, implement a [parameter](https://docs.microsoft.com/en-us/dotnet/api/system.web.ui.webcontrols.parameter?view=netframework-4.8) to dynamically filter list items based on the first combo box's selected value.
 
 ```html
 <dx:ASPxComboBox runat="server" ID="CountryCombo" ClientInstanceName="countryCombo" DataSourceID="CountryDataSource"...>
@@ -43,23 +42,23 @@ Create two [ASPxComboBox](https://docs.devexpress.com/AspNet/DevExpress.Web.ASPx
         <asp:Parameter Name="CountryName" />
     </SelectParameters>/>
 ```
-## 2. Handle the Value Change on the Client
-To update the items in the second combo box with the filtered data from the database, you need to perform a round trip to the server. To do this, handle the client-side [SelectedIndexChanged](https://docs.devexpress.com/AspNet/js-ASPxClientComboBox.SelectedIndexChanged) event of the first [ASPxComboBox](https://docs.devexpress.com/AspNet/DevExpress.Web.ASPxComboBox) and call client-side [PerformCallback](https://docs.devexpress.com/AspNet/js-ASPxClientCallback.PerformCallback(parameter)) method in this event's handler to send a callback to the server. Pass the first combo box's value to the server in the PerformCallback's [parameter](https://docs.devexpress.com/AspNet/js-ASPxClientCallback.PerformCallback(parameter)#parameters) argument.
+## 2. On client: Respond to a selection change and initiate a callback 
+Handle the first combo box's client-side [SelectedIndexChanged](https://docs.devexpress.com/AspNet/js-ASPxClientComboBox.SelectedIndexChanged) event. In the event handler, call the client-side [PerformCallback](https://docs.devexpress.com/AspNet/js-ASPxClientCallback.PerformCallback(parameter)) method of the second combo box. This initiates a callback to the server for the second  editor to filter its item list. In the [PerformCallback](https://docs.devexpress.com/AspNet/js-ASPxClientCallback.PerformCallback(parameter)) method's [parameter](https://docs.devexpress.com/AspNet/js-ASPxClientCallback.PerformCallback(parameter)#parameters), pass the first combo box's selected value to use it as a filter criterion on the server.
 
 ``` html
 <script>
-    function OnCountryChanged(combo) {
-        cityCombo.PerformCallback(combo.GetSelectedItem().value.toString());
+    function OnCountryChanged(selectedValue) {
+        cityCombo.PerformCallback(selectedValue);
     }
 </script>
     ...
 <dx:ASPxComboBox runat="server" ID="CountryCombo" ClientInstanceName="countryCombo" ...>
-    <ClientSideEvents SelectedIndexChanged="function(s,e){OnCountryChanged(s);}"/>
+    <ClientSideEvents SelectedIndexChanged="function(s,e){OnCountryChanged(s.GetSelectedItem().value.toString());}"/>
     ...
 ```
 
-## 3. Update the Data Source on the Server
-Handle the server-side [Callback](https://docs.devexpress.com/AspNet/DevExpress.Web.ASPxCallback.Callback) event that was generated by the client-side [PerformCallback](https://docs.devexpress.com/AspNet/js-ASPxClientCallback.PerformCallback(parameter)) method. In the handler, update the second combo box's data source using the value of the first combo box to filter the results from the database. The [Parameter](https://docs.devexpress.com/AspNet/DevExpress.Web.CallbackEventArgsBase.Parameter) property of the event data stores the first combo box's value passed alongside the callback.
+## 3. On server: Filter list items
+Handle the second combo box's server-side [Callback](https://docs.devexpress.com/AspNet/DevExpress.Web.ASPxCallback.Callback) event that is generated in response to a call to the client-side [PerformCallback](https://docs.devexpress.com/AspNet/js-ASPxClientCallback.PerformCallback(parameter)) method. In the handler, use the event argument's [Parameter](https://docs.devexpress.com/AspNet/DevExpress.Web.CallbackEventArgsBase.Parameter) property to obtain the first combo box's value passed from the client side and use this value to filter the second combo box's data source.
 
 ```c#
 protected void CityCombo_Callback(object source, DevExpress.Web.CallbackEventArgsBase e) {

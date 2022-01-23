@@ -14,7 +14,7 @@
 **[[Run Online]](https://codecentral.devexpress.com/e2355/)**
 <!-- run online end -->
 
-This demo shows how to use [ASPxComboBox](https://docs.devexpress.com/AspNet/DevExpress.Web.ASPxComboBox) to implement two cascading combo boxes. In the demo, a selection in the first combo box (Country) filters the item list of the second combo box (City).
+This demo shows how to use the [ASPxComboBox](https://docs.devexpress.com/AspNet/DevExpress.Web.ASPxComboBox) edutir type to implement two cascading combo boxes. In the demo, a selection in the first combo box (Country) filters the item list of the second combo box (City).
 
 ![example demo](demo.gif)
 
@@ -58,7 +58,7 @@ Handle the first combo box's client-side [SelectedIndexChanged](https://docs.dev
 ```
 
 ## 3. On server: Filter list items
-Handle the second combo box's server-side [Callback](https://docs.devexpress.com/AspNet/DevExpress.Web.ASPxCallback.Callback) event that is generated in response to a call to the client-side [PerformCallback](https://docs.devexpress.com/AspNet/js-ASPxClientCallback.PerformCallback(parameter)) method. In the handler, use the event argument's [Parameter](https://docs.devexpress.com/AspNet/DevExpress.Web.CallbackEventArgsBase.Parameter) property to obtain the first combo box's value passed from the client side and use this value to filter the second combo box's data source.
+Handle the second combo box's server-side [Callback](https://docs.devexpress.com/AspNet/DevExpress.Web.ASPxCallback.Callback) event that is generated in response to a call to the client-side [PerformCallback](https://docs.devexpress.com/AspNet/js-ASPxClientCallback.PerformCallback(parameter)) method. In the handler, use the event argument's [Parameter](https://docs.devexpress.com/AspNet/DevExpress.Web.CallbackEventArgsBase.Parameter) property to obtain the first combo box's value passed from the client side. Use this value to filter the second combo box's data source.
 
 ```c#
 protected void CityCombo_Callback(object source, DevExpress.Web.CallbackEventArgsBase e) {
